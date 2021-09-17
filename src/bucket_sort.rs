@@ -19,11 +19,11 @@ pub fn bucket_sort(array: Vec<usize>, bucket_number: usize) -> Vec<usize> {
 fn next_sort(array: &mut Vec<usize>) {
     for i in 1..array.len() {
         let current = array[i];
-        let mut j = i - 1;
-        while j > 0 && array[j] > current {
-            array[j + 1] = array[j];
+        let mut j = (i - 1) as isize;
+        while j >= 0 && array[j as usize] > current {
+            array[(j + 1) as usize] = array[j as usize];
             j -= 1;
         }
-        array[j+1] = current;
+        array[(j + 1) as usize] = current;
     }
 }
