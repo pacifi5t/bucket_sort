@@ -39,29 +39,36 @@ fn benchmark(size: usize) -> (Vec<u128>, u128) {
     (results, avg)
 }
 
-fn prepare_file(path: &str) -> io::Result<(File)> {
+fn prepare_file(path: &str) -> io::Result<File> {
     let mut file = File::create(path)?;
-    writeln!(file, "n\t\t\ta1\ta2\ta3\tavg\t")?;
+    writeln!(file, "n\t\ta1\ta2\ta3\tavg\t")?;
     Ok(file)
 }
 
 fn export_to_file(file: &mut File, size: usize, results: Vec<u128>, avg: u128) -> io::Result<()> {
     writeln!(
         file,
-        "{}\t\t\t{}\t{}\t{}\t{}",
+        "{}\t\t{}\t{}\t{}\t{}",
         size, results[0], results[1], results[2], avg
     )?;
     Ok(())
 }
 
 fn main() {
-    let (s1, s2, s3) = (100000, 1000000, 10000000);
-    let (res1, avg1) = benchmark(s1);
-    let (res2, avg2) = benchmark(s2);
-    let (res3, avg3) = benchmark(s3);
+    let sizes: Vec<usize> = vec![1000, 10000, 100000, 1000000, 10000000];
+    let mut file:File;
 
-    let mut file = prepare_file("./output.txt").unwrap();
-    export_to_file(&mut file, s1, res1, avg1);
-    export_to_file(&mut file, s2, res2, avg2);
-    export_to_file(&mut file, s3, res3, avg3);
+    match prepare_file("./output.txt") {
+        Err(why) => panic!("{}", why),
+        Ok(created_file) => file = created_file
+    }
+
+    for i in 0..sizes.len() {
+        let size = sizes[i];
+        let (res, avg) = benchmark(size);
+        match export_to_file(&mut file, size, res, avg) {
+            Err(why) => panic!("{}", why),
+            Ok(()) => {}
+        }
+    }
 }
