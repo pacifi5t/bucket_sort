@@ -13,60 +13,55 @@ fn generate(number: usize) -> Vec<usize> {
     let mut rng = rand::thread_rng();
     let mut numbers = Vec::<usize>::new();
     for _i in 0..number {
-        numbers.push(rng.gen_range(0..u16::MAX as usize));
+        numbers.push(rng.gen_range(0..u32::MAX as usize));
     }
 
     numbers
 }
 
-fn benchmark(size: usize) -> (Vec<u128>, u128) {
+fn benchmark(size: usize) -> u128 {
     let mut results = Vec::<u128>::new();
-    for _i in 0..3 {
+    for _i in 0..10 {
         let input = generate(size);
         let length = input.len();
 
         let now = Instant::now();
-        bucket_sort(input, length / 5);
-        results.push(now.elapsed().as_millis());
+        bucket_sort(input, length / 50);
+        results.push(now.elapsed().as_micros());
     }
-    let sum: u128 = results.iter().sum();
-    let avg = sum / 3;
+    let avg = results.iter().sum::<u128>() / 10;
     println!(
-        "Results of 3 runs with size {}: {:?}; Avg: {}",
+        "Results of 10 runs with n={}: {:?}; Avg: {}",
         size, results, avg
     );
 
-    (results, avg)
+    avg
 }
 
 fn prepare_file(path: &str) -> io::Result<File> {
     let mut file = File::create(path)?;
-    writeln!(file, "n\t\ta1\ta2\ta3\tavg\t")?;
+    writeln!(file, "n\t\tavg")?;
     Ok(file)
 }
 
-fn export_to_file(file: &mut File, size: usize, results: Vec<u128>, avg: u128) -> io::Result<()> {
-    writeln!(
-        file,
-        "{}\t\t{}\t{}\t{}\t{}",
-        size, results[0], results[1], results[2], avg
-    )?;
+fn export_to_file(file: &mut File, size: usize, avg: u128) -> io::Result<()> {
+    writeln!(file, "{}\t\t{}", size, avg)?;
     Ok(())
 }
 
 fn main() {
-    let sizes: Vec<usize> = vec![1000, 10000, 100000, 1000000, 10000000];
-    let mut file:File;
+    let sizes: Vec<usize> = vec![10000, 100000, 1000000];
+    let mut file: File;
 
     match prepare_file("./output.txt") {
         Err(why) => panic!("{}", why),
-        Ok(created_file) => file = created_file
+        Ok(created_file) => file = created_file,
     }
 
     for i in 0..sizes.len() {
         let size = sizes[i];
-        let (res, avg) = benchmark(size);
-        match export_to_file(&mut file, size, res, avg) {
+        let avg = benchmark(size);
+        match export_to_file(&mut file, size, avg) {
             Err(why) => panic!("{}", why),
             Ok(()) => {}
         }
