@@ -36,12 +36,12 @@ fn benchmark(size: usize, bucket_number: usize) -> u128 {
             bucket_sort(array, bucket_number);
         }
 
-        let elapsed = now.elapsed().as_micros();
+        let elapsed = now.elapsed().as_millis();
         results.push(elapsed);
-        println!("Run {}: {}us", i, elapsed);
+        println!("Run {}: {}ms", i, elapsed);
     }
     let avg = results.iter().sum::<u128>() / 10;
-    println!("Average: {}us\n", avg);
+    println!("Average: {}ms\n", avg);
 
     avg
 }
